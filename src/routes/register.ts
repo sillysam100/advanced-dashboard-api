@@ -14,6 +14,10 @@ const createRegisterSchema = joi.object({
   name: joi.string().required(),
   siteId: joi.string().required(),
   controlType: joi.string().valid("read", "write").required(),
+  unit: joi.string().when("controlType", {
+    is: "read",
+    then: joi.required(),
+  }),
 });
 
 router.get("/registers", privateRoute, async (req, res) => {
@@ -54,6 +58,7 @@ router.post("/register", privateRoute, async (req, res) => {
       name: value.name,
       userId: req.user.id,
       controlType: value.controlType,
+      unit: value.unit,
     });
     await Site.updateOne(
       { _id: value.siteId, userId: req.user.id },

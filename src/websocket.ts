@@ -19,32 +19,61 @@ export const setupWebSocketServer = (server: any) => {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET as string);
       ws.user = payload;
-      userSockets.set(ws.user.id, ws);
+
+      if (!ws.user?.id) {
+        ws.terminate();
+        return;
+      }
+
+      if (!userSockets.has(ws.user.id)) {
+        userSockets.set(ws.user.id, []);
+      }
+      userSockets.get(ws.user.id).push(ws);
     } catch (err) {
       ws.terminate();
+      return;
     }
 
     ws.on("close", function close() {
-      userSockets.delete(ws.user.id);
+      const userConnections = userSockets.get(ws.user.id);
+      if (userConnections) {
+        const index = userConnections.indexOf(ws);
+        if (index !== -1) {
+          userConnections.splice(index, 1);
+        }
+        if (userConnections.length === 0) {
+          userSockets.delete(ws.user.id);
+        }
+      }
     });
 
     ws.on("message", function incoming(message) {
-      console.log("received: %s", message);
+      try {
+        const data = message.toString();
+        const dataObject = JSON.parse(data);
+        const mqttTopic = `${ws.user.id}/${dataObject._id}`;
+        mqttClient.publish(mqttTopic, dataObject.value);
+      } catch (err) {
+        console.log(err);
+      }
     });
   });
 
   // Connect to MQTT server
-  const mqttClient = mqtt.connect("mqtt://localhost"); // replace with your mqtt server url
+  const mqttClient = mqtt.connect("mqtt://advanceddashboard.duckdns.org", {
+    username: "advanceddashboard",
+    password: "X1ZjUKe6iE!L",
+  });
 
   mqttClient.on("connect", () => {
     console.log("connected to MQTT server");
-    mqttClient.subscribe("#"); // subscribes to all topics. You might want to restrict this to specific topics
+    mqttClient.subscribe("#");
   });
 
   mqttClient.on("message", (topic, message) => {
     const [userId, registerId] = topic.split("/");
-    const ws = userSockets.get(userId);
-    if (ws && ws.readyState === WebSocket.OPEN) {
+    const userConnections = userSockets.get(userId);
+    if (userConnections) {
       const payload = {
         registerId: registerId,
         value: message.toString(),
@@ -53,7 +82,11 @@ export const setupWebSocketServer = (server: any) => {
         { _id: registerId },
         { value: message.toString() }
       ).exec();
-      ws.send(JSON.stringify(payload));
+      userConnections.forEach((ws: CustomWebSocket) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(payload));
+        }
+      });
     }
   });
 };
