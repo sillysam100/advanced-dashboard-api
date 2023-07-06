@@ -12,7 +12,6 @@ const getRegistersSchema = joi.object({
 
 const createRegisterSchema = joi.object({
   name: joi.string().required(),
-  siteId: joi.string().required(),
   controlType: joi.string().valid("read", "write").required(),
   unit: joi.string().when("controlType", {
     is: "read",
@@ -34,7 +33,7 @@ router.get("/registers", privateRoute, async (req, res) => {
     }
     const registers = await Site.findOne({
       _id: value.siteId,
-      userId: req.user.id,
+      organizationId: req.user.organizationId,
     }).populate("registers");
     return res.json(registers);
   } catch (err) {
@@ -56,14 +55,10 @@ router.post("/register", privateRoute, async (req, res) => {
     }
     const register = await Register.create({
       name: value.name,
-      userId: req.user.id,
+      organizationId: req.user.organizationId,
       controlType: value.controlType,
       unit: value.unit,
     });
-    await Site.updateOne(
-      { _id: value.siteId, userId: req.user.id },
-      { $push: { registers: register._id } }
-    );
     return res.json(register);
   } catch (err) {
     console.log(err);

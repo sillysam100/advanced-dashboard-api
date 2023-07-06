@@ -19,37 +19,40 @@ router.get("/sites", privateRoute, async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal server error" });
 
   try {
-    const sites = await Site.find({ userId: req.user.id });
-
+    const sites = await Site.find({ organizationId: req.user.organizationId });
     return res.json(sites);
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
-router.get("/site", privateRoute, async (req: Request, res: Response) => {
-  try {
-    const { error, value } = getSiteSchema.validate(req.query);
+router.get(
+  "/site/:siteId",
+  privateRoute,
+  async (req: Request, res: Response) => {
+    try {
+      const { error, value } = getSiteSchema.validate(req.params);
 
-    if (!req.user)
+      if (!req.user)
+        return res.status(500).json({ message: "Internal server error" });
+
+      if (error) {
+        return res
+          .status(400)
+          .json({ message: "Bad request", error: error.details[0].message });
+      }
+
+      const sites = await Site.findOne({
+        _id: value.siteId,
+        organizationId: req.user.organizationId,
+      });
+
+      return res.json(sites);
+    } catch (err) {
       return res.status(500).json({ message: "Internal server error" });
-
-    if (error) {
-      return res
-        .status(400)
-        .json({ message: "Bad request", error: error.details[0].message });
     }
-
-    const sites = await Site.findOne({
-      _id: value.siteId,
-      userId: req.user.id,
-    });
-
-    return res.json(sites);
-  } catch (err) {
-    return res.status(500).json({ message: "Internal server error" });
   }
-});
+);
 
 router.post("/site", privateRoute, async (req: Request, res: Response) => {
   try {
@@ -64,7 +67,10 @@ router.post("/site", privateRoute, async (req: Request, res: Response) => {
         .json({ message: "Bad request", error: error.details[0].message });
     }
 
-    const site = await Site.create({name: value.name, userId: req.user.id});
+    const site = await Site.create({
+      name: value.name,
+      organizationId: req.user.organizationId,
+    });
 
     return res.json(site);
   } catch (err) {
