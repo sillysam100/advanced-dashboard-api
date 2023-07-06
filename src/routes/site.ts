@@ -64,7 +64,7 @@ router.post("/site", privateRoute, async (req: Request, res: Response) => {
         .json({ message: "Bad request", error: error.details[0].message });
     }
 
-    const site = await Site.create(value.name, req.user.id);
+    const site = await Site.create({name: value.name, userId: req.user.id});
 
     return res.json(site);
   } catch (err) {

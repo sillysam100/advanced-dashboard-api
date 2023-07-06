@@ -1,8 +1,7 @@
-import dotenv from "dotenv";
-dotenv.config();
 import { setupWebSocketServer } from "./websocket";
 import http from "http";
 
+require('dotenv').config();
 import mongoose from "mongoose";
 import app from "./app";
 

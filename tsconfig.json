@@ -1,4 +1,11 @@
 {
+  "ts-node": {
+    "files": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/interfaces/custom.d.ts"
+  ],
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
