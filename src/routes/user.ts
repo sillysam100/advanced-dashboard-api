@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
+import { UserRole } from "../models/User";
 import { privateRoute } from "../middlewares/auth";
 import Joi from "joi";
 
@@ -10,7 +11,14 @@ const newUserSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required(),
   organizationId: Joi.string().required(),
+  userRoleId: Joi.string().required(),
 });
+
+const newUserRoleSchema = Joi.object({
+  name: Joi.string().valid('observe', 'edit', 'admin').required(),
+  actions: Joi.array().items(Joi.string().valid('observe', 'edit')).required(),
+});
+
 
 router.post("/user/login", async (req, res) => {
   const { username, password } = req.body;
@@ -29,7 +37,7 @@ router.post("/user/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, organizationId: user.organizationId },
+      { id: user.id, organizationId: user.organizationId, userRoleId: user.userRoleId },
       process.env.JWT_SECRET as string
     );
 
@@ -42,13 +50,13 @@ router.post("/user/login", async (req, res) => {
 router.post("/user/register", async (req, res) => {
   const { error } = newUserSchema.validate(req.body);
 
-  const { username, password, organizationId } = req.body;
+  const { username, password, organizationId, userRoleId } = req.body;
 
   try {
-    const user = await User.create({ username, password, organizationId });
+    const user = await User.create({ username, password, organizationId, userRoleId });
 
     const token = jwt.sign(
-      { id: user._id, organizationId: organizationId },
+      { id: user._id, organizationId: organizationId, userRoleId: userRoleId },
       process.env.JWT_SECRET as string
     );
 
@@ -65,5 +73,55 @@ router.post("/user/logout", (req, res) => {
 router.post("/user/validate", privateRoute, (req, res) => {
   return res.json({ message: "Token is valid." });
 });
+
+router.get("/user/roles", privateRoute, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(500).json({ message: "Internal server error" });
+
+    }
+    const roles = await UserRole.find({ _id: req.user.userRoleId });
+    return res.json(roles);
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/user/role", privateRoute, async (req, res) => {
+  try {
+    const { error, value } = newUserRoleSchema.validate(req.body);
+
+    if (!req.user) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (error) {
+      return res
+        .status(400)
+        .json({ message: "Bad request", error: error.details[0].message });
+    }
+
+    const role = await UserRole.create(value);
+
+    return res.json(role);
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/user/role/:roleId", privateRoute, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    const role = await UserRole.findOne({ _id: req.params.roleId });
+
+    return res.json(role);
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 export default router;

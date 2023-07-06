@@ -1,13 +1,28 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import { IUser } from "../interfaces/User";
+import { IUser, IUserRole } from "../interfaces/User";
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, require: true },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
+  userRoleId: { type: mongoose.Schema.Types.ObjectId, ref: "UserRole" },
   roleId: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
 });
+
+const UserRoleSchema = new mongoose.Schema({
+  name: { 
+    type: String, 
+    required: true,
+    enum: ['observe', 'edit', 'admin']
+  },
+  actions: [{
+    type: String,
+    required: true,
+    enum: ['observe', 'edit']
+  }],
+});
+
 
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -22,3 +37,5 @@ UserSchema.methods.comparePassword = async function (
 };
 
 export const User = mongoose.model<IUser>("User", UserSchema);
+export const UserRole = mongoose.model<IUserRole>("UserRole", UserRoleSchema);
+
