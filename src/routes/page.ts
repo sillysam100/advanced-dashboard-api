@@ -38,6 +38,15 @@ const updatePageSchema = Joi.object({
   ),
 });
 
+const updateLayoutSchema = Joi.array().items(
+  Joi.object({
+    registerId: Joi.string().required(),
+    cols: Joi.number(),
+    rows: Joi.number(),
+    position: Joi.number(),
+  })
+);
+
 const newLayoutEntrySchema = Joi.object({
   registerId: Joi.string().required(),
   cols: Joi.number().required(),
@@ -163,6 +172,38 @@ router.post(
       );
 
       return res.json({ message: "Layout entry added to page" });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+router.put(
+  "/page/:pageId/layout",
+  privateRoute,
+  async (req: Request, res: Response) => {
+    try {
+      updateLayoutSchema.validate(req.body);
+
+      const pageId = req.params.pageId;
+
+      if (!req.user) {
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      await Page.updateOne(
+        {
+          _id: pageId,
+        },
+        {
+          $set: {
+            layout: req.body,
+          },
+        }
+      );
+
+      return res.json({ message: "Layout updated" });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Internal server error" });

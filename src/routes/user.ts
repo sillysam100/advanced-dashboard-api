@@ -11,20 +11,20 @@ const newUserSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required(),
   organizationId: Joi.string().required(),
-  userRoleId: Joi.string().required(),
 });
 
 const newUserRoleSchema = Joi.object({
-  name: Joi.string().valid('observe', 'edit', 'admin').required(),
-  actions: Joi.array().items(Joi.string().valid('observe', 'edit')).required(),
+  name: Joi.string().valid("observe", "edit", "admin").required(),
+  actions: Joi.array().items(Joi.string().valid("observe", "edit")).required(),
 });
-
 
 router.post("/user/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const user = await User.findOne({ username });
+
+    console.log(user);
 
     if (!user) {
       return res.status(401).json({ message: "Invalid username" });
@@ -37,11 +37,14 @@ router.post("/user/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, organizationId: user.organizationId, userRoleId: user.userRoleId },
+      { id: user.id, organizationId: user.organizationId, role: user.role },
       process.env.JWT_SECRET as string
     );
 
-    return res.json({ token, user: { userId: user.id, username } });
+    return res.json({
+      token,
+      user: { userId: user.id, username: username, role: user.role },
+    });
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -53,14 +56,13 @@ router.post("/user/register", async (req, res) => {
   const { username, password, organizationId, userRoleId } = req.body;
 
   try {
-    const user = await User.create({ username, password, organizationId, userRoleId });
+    const user = await User.create({
+      username,
+      password,
+      organizationId,
+    });
 
-    const token = jwt.sign(
-      { id: user._id, organizationId: organizationId, userRoleId: userRoleId },
-      process.env.JWT_SECRET as string
-    );
-
-    return res.json({ token });
+    return res.json({ message: "User created successfully" });
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -78,7 +80,6 @@ router.get("/user/roles", privateRoute, async (req, res) => {
   try {
     if (!req.user) {
       return res.status(500).json({ message: "Internal server error" });
-
     }
     const roles = await UserRole.find({ _id: req.user.userRoleId });
     return res.json(roles);
@@ -122,6 +123,5 @@ router.get("/user/role/:roleId", privateRoute, async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 export default router;

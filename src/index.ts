@@ -1,7 +1,7 @@
 import { setupWebSocketServer } from "./websocket";
 import http from "http";
 
-require('dotenv').config();
+require("dotenv").config();
 import mongoose from "mongoose";
 import app from "./app";
 
@@ -9,7 +9,7 @@ const server = http.createServer();
 setupWebSocketServer(server);
 
 // DB Connection
-const db = "mongodb://127.0.0.1:27017/advanceddashboard";
+const db = "mongodb://advanceddashboard.duckdns.org:27017/advanceddashboard";
 mongoose
   .connect(db)
   .then(() => console.log("MongoDB connected..."))
