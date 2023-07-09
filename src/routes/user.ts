@@ -73,7 +73,13 @@ router.post("/user/logout", (req, res) => {
 });
 
 router.post("/user/validate", privateRoute, (req, res) => {
-  return res.json({ message: "Token is valid." });
+  return res.json({
+    user: {
+      userId: req.user?.id,
+      role: req.user?.role,
+      username: req.user?.username,
+    },
+  });
 });
 
 router.get("/user/roles", privateRoute, async (req, res) => {
@@ -81,7 +87,7 @@ router.get("/user/roles", privateRoute, async (req, res) => {
     if (!req.user) {
       return res.status(500).json({ message: "Internal server error" });
     }
-    const roles = await UserRole.find({ _id: req.user.userRoleId });
+    const roles = await UserRole.find({ _id: req.user.roleId });
     return res.json(roles);
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
