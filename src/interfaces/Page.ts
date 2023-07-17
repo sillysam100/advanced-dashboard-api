@@ -12,6 +12,5 @@ export interface IPage extends mongoose.Document {
   _id?: mongoose.Schema.Types.ObjectId;
   siteId: mongoose.Schema.Types.ObjectId;
   name: string;
-  registers: IRegister["_id"][];
   layout: ILayoutEntry[];
 }

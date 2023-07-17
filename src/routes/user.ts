@@ -11,6 +11,7 @@ const newUserSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required(),
   organizationId: Joi.string().required(),
+  roleId: Joi.string().required(),
 });
 
 const newUserRoleSchema = Joi.object({
@@ -53,13 +54,14 @@ router.post("/user/login", async (req, res) => {
 router.post("/user/register", async (req, res) => {
   const { error } = newUserSchema.validate(req.body);
 
-  const { username, password, organizationId, userRoleId } = req.body;
+  const { username, password, organizationId, roleId } = req.body;
 
   try {
     const user = await User.create({
       username,
       password,
       organizationId,
+      roleId: roleId,
     });
 
     return res.json({ message: "User created successfully" });

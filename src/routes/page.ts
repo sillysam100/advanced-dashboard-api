@@ -3,7 +3,7 @@ import { privateRoute } from "../middlewares/auth";
 import Register from "../models/Register";
 import Joi from "joi";
 import { Request, Response, Router } from "express";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 const router = Router();
 
@@ -20,10 +20,6 @@ const createPageSchema = Joi.object({
   name: Joi.string().required(),
 });
 
-const addRegisterSchema = Joi.object({
-  registerId: Joi.string().required(),
-});
-
 const updatePageSchema = Joi.object({
   pageId: Joi.string().required(),
   name: Joi.string(),
@@ -36,6 +32,10 @@ const updatePageSchema = Joi.object({
       position: Joi.number().required(),
     })
   ),
+});
+
+const moveRegisterSchema = Joi.object({
+  direction: Joi.string().valid("right", "left").required(),
 });
 
 const updateLayoutSchema = Joi.array().items(
@@ -87,66 +87,6 @@ router.get(
   }
 );
 
-router.get(
-  "/page/:pageId/registers",
-  privateRoute,
-  async (req: Request, res: Response) => {
-    try {
-      const pageId = req.params.pageId;
-
-      if (!req.user) {
-        return res.status(500).json({ message: "Internal server error" });
-      }
-
-      const page = await Page.findById(pageId);
-
-      if (!page) {
-        return res.status(404).json({ message: "Page not found" });
-      }
-
-      const registers = await Register.find({ _id: { $in: page.registers } });
-
-      return res.json(registers);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
-
-router.post(
-  "/page/:pageId/register",
-  privateRoute,
-  async (req: Request, res: Response) => {
-    try {
-      addRegisterSchema.validate(req.body);
-
-      const registerId = req.body.registerId;
-      const pageId = req.params.pageId;
-
-      if (!req.user) {
-        return res.status(500).json({ message: "Internal server error" });
-      }
-
-      await Page.updateOne(
-        {
-          _id: pageId,
-        },
-        {
-          $push: {
-            registers: registerId as mongoose.Types.ObjectId,
-          },
-        }
-      );
-
-      return res.json({ message: "Register added to page" });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
-
 router.post(
   "/page/:pageId/layout",
   privateRoute,
@@ -192,16 +132,80 @@ router.put(
         return res.status(500).json({ message: "Internal server error" });
       }
 
+      const updateQuery: Record<string, any> = {};
+      for (const key of Object.keys(req.body)) {
+        if (key !== "registerId") {
+          updateQuery[`layout.$.${key}`] = req.body[key];
+        }
+      }
+
+      const registerId = Types.ObjectId.isValid(req.body.registerId)
+        ? new Types.ObjectId(req.body.registerId)
+        : null;
+
+      if (!registerId) {
+        return res.status(400).json({ message: "Invalid registerId" });
+      }
+
+      // change your MongoDB query to include the position field
       await Page.updateOne(
         {
           _id: pageId,
+          "layout.registerId": registerId,
         },
         {
-          $set: {
-            layout: req.body,
-          },
+          $set: updateQuery,
         }
       );
+
+      return res.json({ message: "Layout updated" });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+router.put(
+  "/page/:pageId/layout/:registerId/position",
+  privateRoute,
+  async (req: Request, res: Response) => {
+    try {
+      moveRegisterSchema.validate(req.body);
+      const { pageId, registerId } = req.params;
+      const { direction } = req.body;
+
+      if (!req.user) {
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      const page = await Page.findOne({ _id: pageId });
+
+      if (!page) {
+        return res.status(400).json({ message: "Page not found" });
+      }
+
+      const layoutEntry = page.layout.find(
+        (entry) => entry.registerId.toString() === registerId
+      );
+
+      if (!layoutEntry) {
+        return res.status(400).json({ message: "Layout entry not found" });
+      }
+
+      const delta = direction === "right" ? 1 : -1;
+      const newPosition = layoutEntry.position + delta;
+
+      const affectedEntry = page.layout.find(
+        (entry) => entry.position === newPosition
+      );
+
+      if (affectedEntry) {
+        affectedEntry.position -= delta;
+      }
+
+      layoutEntry.position = newPosition;
+      await page.save();
 
       return res.json({ message: "Layout updated" });
     } catch (err) {

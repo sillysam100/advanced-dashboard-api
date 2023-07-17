@@ -31,11 +31,26 @@ router.get("/registers", privateRoute, async (req, res) => {
         .status(400)
         .json({ message: "Bad request", error: error.details[0].message });
     }
-    const registers = await Site.findOne({
-      _id: value.siteId,
+    const registers = await Register.find({
       organizationId: req.user.organizationId,
-    }).populate("registers");
+    });
     return res.json(registers);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/register/:registerId", privateRoute, async (req, res) => {
+  if (!req.user) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+  try {
+    const register = await Register.findOne({
+      _id: req.params.registerId,
+    });
+    return res.json(register);
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }
