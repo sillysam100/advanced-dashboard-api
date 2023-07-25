@@ -1,9 +1,9 @@
-import { IOrganization } from "../interfaces/Organization";
+import { IOrganization } from "../../interfaces/iiicontrol/Organization";
 import mongoose, { Schema, Document } from "mongoose";
-import { Organization } from "../models/Organization";
+import { Organization } from "../../models/iiicontrol/Organization";
 import Joi from "joi";
 import { Router } from "express";
-import { privateRoute } from "../middlewares/auth";
+import { privateRoute } from "../../middlewares/auth";
 
 const router = Router();
 

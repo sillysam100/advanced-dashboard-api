@@ -1,8 +1,8 @@
 import express from "express";
-import Register from "../models/Register";
+import Register from "../models/iiicontrol/Register";
 import { privateRoute } from "../middlewares/auth";
 import joi from "joi";
-import Site from "../models/Sites";
+import Site from "../models/iiicontrol/Sites";
 
 const router = express.Router();
 

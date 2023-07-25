@@ -9,7 +9,7 @@ const server = http.createServer();
 setupWebSocketServer(server);
 
 // DB Connection
-const db = "mongodb://localhost:27017/advanceddashboard";
+const db = "mongodb://localhost:27017/iiicontrol";
 mongoose
   .connect(db)
   .then(() => console.log("MongoDB connected..."))

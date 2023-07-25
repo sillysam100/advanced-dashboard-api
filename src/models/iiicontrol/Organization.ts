@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { IOrganization } from "../interfaces/Organization";
+import { IOrganization } from "../../interfaces/iiicontrol/Organization";
 
 const OrganizationSchema: Schema = new Schema({
   name: { type: String, required: true },

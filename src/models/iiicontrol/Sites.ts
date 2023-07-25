@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { ISite } from "../interfaces/Site";
+import { ISite } from "../../interfaces/iiicontrol/Site";
 
 const SiteSchema: Schema = new Schema({
   name: { type: String, required: true },

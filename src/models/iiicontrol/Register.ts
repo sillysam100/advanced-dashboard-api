@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IRegister } from "../interfaces/Register";
+import { IRegister } from "../../interfaces/iiicontrol/Register";
 
 const RegisterSchema: Schema = new Schema({
   name: { type: String, required: true },

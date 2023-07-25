@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { IRegister } from "./Register";
 
 export interface ILayoutEntry {
   registerId: mongoose.Schema.Types.ObjectId;

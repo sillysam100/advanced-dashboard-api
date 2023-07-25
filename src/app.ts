@@ -9,7 +9,7 @@ import userRoutes from "./routes/user";
 import siteRoutes from "./routes/site";
 import registerRoutes from "./routes/register";
 import pageRoutes from "./routes/page";
-import organizationRoutes from "./routes/organization";
+import organizationRoutes from "./routes/iiiadmin/organization";
 import MessageResponse from "./interfaces/MessageResponse";
 
 import passport from "passport";

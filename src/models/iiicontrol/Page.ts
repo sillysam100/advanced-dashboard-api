@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IPage } from "../interfaces/Page";
+import { IPage } from "../../interfaces/iiicontrol/Page";
 
 const PageSchema: Schema = new Schema({
   siteId: { type: Schema.Types.ObjectId, ref: "Site", required: true },

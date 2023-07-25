@@ -1,6 +1,6 @@
-import { Page } from "../models/Page";
+import { Page } from "../models/iiicontrol/Page";
 import { privateRoute } from "../middlewares/auth";
-import Register from "../models/Register";
+import Register from "../models/iiicontrol/Register";
 import Joi from "joi";
 import { Request, Response, Router } from "express";
 import mongoose, { Types } from "mongoose";
