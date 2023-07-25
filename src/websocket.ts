@@ -80,8 +80,8 @@ export const setupWebSocketServer = (server: any) => {
 
     // Connect to MQTT server
     const mqttClient = mqtt.connect("mqtt://localhost:1883", {
-      username: "advanceddashboard",
-      password: "X1ZjUKe6iE!L",
+      username: "iii",
+      password: "information",
     });
 
     mqttClient.on("connect", () => {
