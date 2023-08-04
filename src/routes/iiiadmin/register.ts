@@ -1,9 +1,8 @@
 import express from "express";
-import Register from "../models/iiicontrol/Register";
-import { privateRoute } from "../middlewares/auth";
 import joi from "joi";
-import Site from "../models/iiicontrol/Sites";
-
+import Register from "../../models/iiicontrol/Register";
+import { privateRoute } from "../../middlewares/auth";
+import Site from "../../models/iiicontrol/Sites";
 const router = express.Router();
 
 const getRegistersSchema = joi.object({

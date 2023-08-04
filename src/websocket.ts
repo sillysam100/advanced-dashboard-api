@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import url from "url";
 import jwt from "jsonwebtoken";
 import mqtt from "mqtt";
-import Register from "./models/Register";
+import Register from "./models/iiicontrol/Register";
 import { v4 as uuidv4 } from "uuid";
 
 interface CustomWebSocket extends WebSocket {

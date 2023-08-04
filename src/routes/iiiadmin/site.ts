@@ -1,6 +1,6 @@
 import express from "express";
-import { privateRoute } from "../middlewares/auth";
-import Site from "../models/iiicontrol/Sites";
+import { privateRoute } from "../../middlewares/auth";
+import Site from "../../models/iiicontrol/Sites";
 import Joi from "joi";
 import { Request, Response } from "express";
 

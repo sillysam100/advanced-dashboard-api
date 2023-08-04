@@ -6,9 +6,10 @@ import path from "path";
 
 import * as middlewares from "./middlewares/error";
 import userRoutes from "./routes/user";
-import siteRoutes from "./routes/site";
-import registerRoutes from "./routes/register";
-import pageRoutes from "./routes/page";
+import siteRoutes from "./routes/iiiadmin/site";
+import registerRoutes from "./routes/iiiadmin/register";
+import customerRoutes from "./routes/iiicustomers/customers";
+import pageRoutes from "./routes/iiiadmin/page";
 import organizationRoutes from "./routes/iiiadmin/organization";
 import MessageResponse from "./interfaces/MessageResponse";
 
@@ -26,10 +27,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
 app.use("/api", userRoutes);
-app.use("/api", siteRoutes);
-app.use("/api", registerRoutes);
-app.use("/api", organizationRoutes);
-app.use("/api", pageRoutes);
+app.use("/api/iiicontrol", siteRoutes);
+app.use("/api/iiicontrol", registerRoutes);
+app.use("/api/iiicontrol", organizationRoutes);
+app.use("/api/iiicontrol", pageRoutes);
+app.use("/api/iiicustomers", customerRoutes);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
